@@ -1,0 +1,9 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "CheckSchedule": "0 0 10-20/2 * * *",
+    "Watcher__Ntfy__Topic": ""
+  }
+}
