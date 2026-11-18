@@ -55,7 +55,7 @@ public class SlotCheckServiceTests
 
     private static (SlotCheckService Service, FakeStore Store, FakeNotifier Notifier, FakeSite Site) Create()
     {
-        var options = Options.Create(new WatcherOptions { RequestDelayMs = 0 });
+        var options = Options.Create(new WatcherOptions { RequestDelayMs = 0, DaysAhead = 14 });
         var site = new FakeSite();
         var client = new PlayFiClient(new HttpClient(site), options);
         var store = new FakeStore();
@@ -72,11 +72,11 @@ public class SlotCheckServiceTests
 
         var first = await service.RunAsync(dryRun: false, CancellationToken.None);
 
-        // Mon 16 .. Mon 30 Nov, Mon-Thu only = 16,17,18,19,23,24,25,26,30 -> 9 days x (T4 + T5)
-        Assert.Equal(18, first.New.Count);
-        Assert.DoesNotContain(first.Matching, s => s.Block.Start.DayOfWeek is DayOfWeek.Friday or DayOfWeek.Saturday or DayOfWeek.Sunday);
+        // Mon 16 .. Mon 30 Nov, Mon/Tue/Thu only = 16,17,19,23,24,26,30 -> 7 days x (T4 + T5)
+        Assert.Equal(14, first.New.Count);
+        Assert.DoesNotContain(first.Matching, s => s.Block.Start.DayOfWeek is DayOfWeek.Wednesday or DayOfWeek.Friday or DayOfWeek.Saturday or DayOfWeek.Sunday);
         Assert.Single(notifier.Sent);
-        Assert.Equal(18, store.Keys.Count);
+        Assert.Equal(14, store.Keys.Count);
 
         var second = await service.RunAsync(dryRun: false, CancellationToken.None);
         Assert.Empty(second.New);
@@ -101,10 +101,10 @@ public class SlotCheckServiceTests
         var (service, store, notifier, site) = Create();
         await service.RunAsync(dryRun: false, CancellationToken.None);
 
-        site.FailDates.Add("2026-11-18");
+        site.FailDates.Add("2026-11-19");
         var result = await service.RunAsync(dryRun: false, CancellationToken.None);
-        Assert.Equal([new DateOnly(2026, 11, 18)], result.FailedDates);
-        Assert.Equal(18, store.Keys.Count); // 2026-11-18 entries preserved
+        Assert.Equal([new DateOnly(2026, 11, 19)], result.FailedDates);
+        Assert.Equal(14, store.Keys.Count); // 2026-11-19 entries preserved
 
         site.FailDates.Clear();
         var recovered = await service.RunAsync(dryRun: false, CancellationToken.None);
@@ -126,5 +126,36 @@ public class SlotCheckServiceTests
         Assert.Single(result.New);
         Assert.Equal(removed, result.New[0].Key);
         Assert.Equal(2, notifier.Sent.Count);
+    }
+}
+
+public class WatcherOptionsTests
+{
+    [Fact]
+    public void Defaults_skip_wednesday_and_fri_sat_sun()
+    {
+        var o = new WatcherOptions();
+        Assert.True(o.IsWatchedDay(DayOfWeek.Monday));
+        Assert.True(o.IsWatchedDay(DayOfWeek.Tuesday));
+        Assert.True(o.IsWatchedDay(DayOfWeek.Thursday));
+        Assert.False(o.IsWatchedDay(DayOfWeek.Wednesday));
+        Assert.False(o.IsWatchedDay(DayOfWeek.Friday));
+    }
+
+    [Fact]
+    public void Weekdays_and_courts_parse_from_comma_separated_strings()
+    {
+        var o = new WatcherOptions { Weekdays = " monday , Wednesday", CourtIds = "2, 5" };
+        Assert.True(o.IsWatchedDay(DayOfWeek.Wednesday));
+        Assert.False(o.IsWatchedDay(DayOfWeek.Tuesday));
+        Assert.True(o.IsWantedCourt(5));
+        Assert.False(o.IsWantedCourt(1));
+    }
+
+    [Fact]
+    public void Invalid_weekday_is_reported()
+    {
+        var o = new WatcherOptions { Weekdays = "Monday,Funday" };
+        Assert.Throws<InvalidOperationException>(() => o.IsWatchedDay(DayOfWeek.Monday));
     }
 }

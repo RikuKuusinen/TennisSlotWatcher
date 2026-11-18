@@ -12,7 +12,7 @@ internal static class SlotFilter
     {
         foreach (var block in blocks)
         {
-            if (!options.CourtIds.Contains(block.CourtId)) continue;
+            if (!options.IsWantedCourt(block.CourtId)) continue;
 
             var date = block.Start.Date;
             var from = Max(Max(block.Start, date + options.WindowStart), now);

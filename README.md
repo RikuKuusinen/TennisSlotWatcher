@@ -8,7 +8,7 @@ It never logs in and never books anything.
 
 | What | Default |
 |---|---|
-| Days checked | today + next 14 days, **Mon-Thu only** |
+| Days checked | today + next 28 days (the furthest play.fi publishes), **Mon, Tue and Thu only** (no Wed/Fri/Sat/Sun) |
 | Courts | T1-T6 (`resid` 1-6), tennis (`p_laji=1`) |
 | Window | bookable time must lie inside **18:00-21:00** |
 | Minimum length | **60 min** inside that window |
@@ -33,11 +33,11 @@ Everything binds from the `Watcher` section; app settings use `__` as separator.
 |---|---|
 | `Watcher__Ntfy__Topic` | *(required)* long random topic name - treat as a secret |
 | `Watcher__Ntfy__Server` / `Watcher__Ntfy__Token` | `https://ntfy.sh` / none |
-| `Watcher__DaysAhead` | `14` |
-| `Watcher__Weekdays__0..n` | Monday..Thursday |
+| `Watcher__DaysAhead` | `28` (also set in local.settings.json; max; later dates return today's page and are flagged as failed) |
+| `Watcher__Weekdays` | `Monday,Tuesday,Thursday` (comma-separated English day names) |
 | `Watcher__WindowStart` / `Watcher__WindowEnd` | `18:00:00` / `21:00:00` |
 | `Watcher__MinDurationMinutes` | `60` |
-| `Watcher__CourtIds__0..n` | 1..6 |
+| `Watcher__CourtIds` | `1,2,3,4,5,6` (comma-separated) |
 | `CheckSchedule` | `0 0 10-20/2 * * *` |
 | `WEBSITE_TIME_ZONE` | `Europe/Helsinki` (Linux) or `FLE Standard Time` (Windows) - makes the cron run in Helsinki time |
 

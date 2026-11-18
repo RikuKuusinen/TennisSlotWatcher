@@ -4,6 +4,8 @@
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
     "CheckSchedule": "0 0 10-20/2 * * *",
-    "Watcher__Ntfy__Topic": ""
+    "Watcher__DaysAhead": "28",
+    "Watcher__Weekdays": "Monday,Tuesday,Thursday",
+    "Watcher__Ntfy__Topic": "tennis-laajasalo-rk-op-2026"
   }
 }

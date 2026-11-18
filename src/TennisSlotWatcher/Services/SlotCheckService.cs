@@ -27,7 +27,7 @@ internal sealed class SlotCheckService(
 
         var dates = Enumerable.Range(0, _options.DaysAhead + 1)
             .Select(today.AddDays)
-            .Where(d => _options.Weekdays.Contains(d.DayOfWeek))
+            .Where(d => _options.IsWatchedDay(d.DayOfWeek))
             .ToList();
 
         var matching = new List<MatchedSlot>();
